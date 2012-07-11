@@ -16,8 +16,8 @@ GREEN    = $(shell printf "\033[32m")
 BROWN    = $(shell printf "\033[33m")
 EOS      = $(shell printf "\033[00m")
 
-CXXFLAGS += -I./libp9/includes -I./includes -I.
-LDFLAGS  += -L./libp9/build -lp9
+CXXFLAGS += $(shell llvm-config --cxxflags) -I./libp9/includes -I./includes -I.
+LDFLAGS  += $(shell llvm-config --ldflags)  -L./libp9/build -lp9
 
 all: $(BINARY)
 	@printf "Compilation done, output is build/${BINARY}\n"
