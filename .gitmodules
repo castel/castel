@@ -1,0 +1,3 @@
+[submodule "libp9"]
+	path = libp9
+	url = git@github.com:arcanis/side.libp9
