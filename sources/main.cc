@@ -1,7 +1,9 @@
 #include <iostream>
 #include <string>
 
-#include <llvm/Function.h>
+#include <llvm/Support/IRBuilder.h>
+#include <llvm/LLVMContext.h>
+#include <llvm/Value.h>
 #include <p9/lexer/Lexer.hh>
 #include <p9/parser/Parser.hh>
 
@@ -18,6 +20,11 @@ int main( void )
     p9::parser::Parser parser( lexer );
     p9::ast::Token * ast = parser.exec( );
 
-    CompilerVisitor compilerVisitor;
-    llvm::Value * value = compilerVisitor.codegen( *ast );
+    llvm::LLVMContext context;
+    llvm::IRBuilder< > builder( context );
+
+    CompilerVisitor compilerVisitor( context, builder );
+    ast->accept( compilerVisitor );
+
+    return 0;
 }

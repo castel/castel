@@ -14,21 +14,17 @@ class CompilerVisitor : public p9::utils::Visitor
 
 public:
 
-    CompilerVisitor( void );
+    CompilerVisitor( llvm::LLVMContext & context, llvm::IRBuilder< > & builder );
 
-public:
-
-    llvm::Value * codegen( p9::ast::Token & token );
-
-public:
+private:
 
     virtual void visit( p9::ast::expr::Binary & );
     virtual void visit( p9::ast::expr::Number & );
 
 private:
 
-    llvm::LLVMContext mContext;
-    llvm::IRBuilder< > mBuilder;
+    llvm::LLVMContext & mContext;
+    llvm::IRBuilder< > & mBuilder;
     std::auto_ptr< llvm::Value > mValue;
 
 };
