@@ -2,9 +2,9 @@
 
 #include "CompilerVisitor.hh"
 
-void CompilerVisitor::visit( p9::ast::BinaryOperator & binaryOperator )
+void CompilerVisitor::visit( p9::ast::expr::Binary & binaryExpression )
 {
-    switch ( binaryOperator.type( ) ) {
+    switch ( binaryExpression.type( ) ) {
 
     case p9::lexer::T_Add:
         break;

@@ -5,11 +5,11 @@
 #include <llvm/Support/IRBuilder.h>
 #include <llvm/LLVMContext.h>
 #include <llvm/Value.h>
-#include <p9/ast/BinaryOperator.hh>
-#include <p9/ast/Number.hh>
-#include <p9/ast/Visitor.hh>
+#include <p9/ast/expr/Binary.hh>
+#include <p9/ast/expr/Number.hh>
+#include <p9/utils/Visitor.hh>
 
-class CompilerVisitor : public p9::ast::Visitor
+class CompilerVisitor : public p9::utils::Visitor
 {
 
 public:
@@ -22,8 +22,8 @@ public:
 
 public:
 
-    virtual void visit( p9::ast::BinaryOperator & );
-    virtual void visit( p9::ast::Number &         );
+    virtual void visit( p9::ast::expr::Binary & );
+    virtual void visit( p9::ast::expr::Number & );
 
 private:
 
