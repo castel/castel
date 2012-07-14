@@ -1,7 +1,11 @@
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/JIT.h>
 #include <llvm/Support/IRBuilder.h>
+#include <llvm/Support/TargetSelect.h>
 #include <llvm/LLVMContext.h>
 #include <llvm/Module.h>
 #include <llvm/Value.h>
@@ -40,9 +44,18 @@ int main( void )
     llvm::Module module( "main", context );
 
     CompilerVisitor compilerVisitor( context, builder, module );
-    compilerVisitor.codegen( *function2 );
+    llvm::Function * program = static_cast< llvm::Function * >( compilerVisitor.codegen( *function2 ) );
 
-    module.dump( );
+    std::string errString;
+    llvm::InitializeNativeTarget();
+    llvm::ExecutionEngine * engine = llvm::EngineBuilder( &module ).setErrorStr( &errString ).create( );
+
+    if ( ! engine )
+        throw std::runtime_error( errString );
+
+    void * fPtr = engine->getPointerToFunction( program );
+    double (*callableFPtr)(void) = reinterpret_cast< double(*)(void) >( fPtr );
+    std::cout << callableFPtr( ) << std::endl;
 
     return 0;
 }
