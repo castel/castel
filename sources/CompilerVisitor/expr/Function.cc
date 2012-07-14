@@ -27,6 +27,7 @@ void CompilerVisitor::visit( p9::ast::expr::Function & function )
     mBuilder.SetInsertPoint( basicBlock );
 
     function.statements( )->accept( *this );
+    mValue.release( )->dump( );
 
     llvmFunction->dump( );
 

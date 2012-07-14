@@ -10,3 +10,10 @@ CompilerVisitor::CompilerVisitor( llvm::LLVMContext & context, llvm::IRBuilder< 
 , mBuilder( builder )
 {
 }
+
+llvm::Value * CompilerVisitor::codegen( p9::ast::Token & token )
+{
+    token.accept( *this );
+
+    return mValue.release( );
+}

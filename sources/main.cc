@@ -40,7 +40,7 @@ int main( void )
     llvm::Module module( "main", context );
 
     CompilerVisitor compilerVisitor( context, builder );
-    function2->accept( compilerVisitor );
+    compilerVisitor.codegen( *function2 );
 
     module.dump( );
 

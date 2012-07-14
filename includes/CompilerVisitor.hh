@@ -11,6 +11,7 @@
 #include <p9/ast/expr/Number.hh>
 #include <p9/ast/stmt/Expression.hh>
 #include <p9/ast/stmt/Return.hh>
+#include <p9/ast/Token.hh>
 #include <p9/utils/Visitor.hh>
 
 class CompilerVisitor : public p9::utils::Visitor
@@ -19,6 +20,10 @@ class CompilerVisitor : public p9::utils::Visitor
 public:
 
     CompilerVisitor( llvm::LLVMContext & context, llvm::IRBuilder< > & builder );
+
+public:
+
+    llvm::Value * codegen( p9::ast::Token & );
 
 private:
 
