@@ -1,4 +1,7 @@
+#include <p9/ast/stmt/Return.hh>
+
 #include "CompilerVisitor.hh"
+#include <iostream>
 
 void CompilerVisitor::visit( p9::ast::stmt::Return & astReturn )
 {
