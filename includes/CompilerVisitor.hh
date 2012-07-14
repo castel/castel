@@ -10,6 +10,7 @@
 #include <p9/ast/expr/Function.hh>
 #include <p9/ast/expr/Number.hh>
 #include <p9/ast/stmt/Expression.hh>
+#include <p9/ast/stmt/Return.hh>
 #include <p9/utils/Visitor.hh>
 
 class CompilerVisitor : public p9::utils::Visitor
@@ -27,6 +28,7 @@ private:
     virtual void visit( p9::ast::expr::Number   & );
 
     virtual void visit( p9::ast::stmt::Expression & );
+    virtual void visit( p9::ast::stmt::Return     & );
 
 private:
 

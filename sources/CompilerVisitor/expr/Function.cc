@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include <llvm/Analysis/Verifier.h>
 #include <llvm/BasicBlock.h>
 #include <llvm/DerivedTypes.h>
 #include <llvm/Function.h>
@@ -27,5 +28,8 @@ void CompilerVisitor::visit( p9::ast::expr::Function & function )
 
     function.statements( )->accept( *this );
 
+    llvmFunction->dump( );
+
+    llvm::verifyFunction( * llvmFunction );
     mValue.reset( llvmFunction );
 }
