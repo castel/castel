@@ -4,6 +4,7 @@
 
 #include <llvm/Support/IRBuilder.h>
 #include <llvm/LLVMContext.h>
+#include <llvm/Module.h>
 #include <llvm/Value.h>
 #include <p9/ast/expr/Binary.hh>
 #include <p9/ast/expr/Call.hh>
@@ -19,7 +20,7 @@ class CompilerVisitor : public p9::utils::Visitor
 
 public:
 
-    CompilerVisitor( llvm::LLVMContext & context, llvm::IRBuilder< > & builder );
+    CompilerVisitor ( llvm::LLVMContext & context, llvm::IRBuilder< > & builder, llvm::Module & module );
 
 public:
 
@@ -39,6 +40,8 @@ private:
 
     llvm::LLVMContext & mContext;
     llvm::IRBuilder< > & mBuilder;
+    llvm::Module & mModule;
+
     std::unique_ptr< llvm::Value > mValue;
 
 };

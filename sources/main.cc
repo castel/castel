@@ -39,7 +39,7 @@ int main( void )
     llvm::IRBuilder< > builder( context );
     llvm::Module module( "main", context );
 
-    CompilerVisitor compilerVisitor( context, builder );
+    CompilerVisitor compilerVisitor( context, builder, module );
     compilerVisitor.codegen( *function2 );
 
     module.dump( );

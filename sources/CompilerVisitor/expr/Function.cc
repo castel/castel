@@ -21,7 +21,7 @@ void CompilerVisitor::visit( p9::ast::expr::Function & function )
     std::vector< llvm::Type * > parametersTypes;
 
     llvm::FunctionType * functionType = llvm::FunctionType::get( returnType, parametersTypes, false );
-    llvm::Function * llvmFunction = llvm::Function::Create( functionType, llvm::Function::ExternalLinkage );
+    llvm::Function * llvmFunction = llvm::Function::Create( functionType, llvm::Function::ExternalLinkage, "", &mModule );
 
     llvm::BasicBlock * basicBlock = llvm::BasicBlock::Create( mContext, "", llvmFunction );
     mBuilder.SetInsertPoint( basicBlock );
