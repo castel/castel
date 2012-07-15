@@ -7,8 +7,9 @@ RM       = rm
 CXXFLAGS = -g
 
 SRCS     = $(shell find sources -name '*.cc')
+HDRS     = $(shell find includes -name '*.hh')
 OBJS     = $(addprefix build/objects/,$(SRCS:.cc=.o))
-DEPS     = $(addprefix build/dependencies/,$(SRCS:.cc=.d))
+DEPS     = $(addprefix build/dependencies/,$(SRCS:.cc=.d) $(HDRS:.hh=.d))
 
 PURPLE   = $(shell printf "\033[35m")
 CYAN     = $(shell printf "\033[36m")

@@ -16,12 +16,13 @@
 #include <p9/ast/stmt/Return.hh>
 #include <p9/ast/Expression.hh>
 #include <p9/ast/Statement.hh>
+#include <p9/lexer/Lexer.hh>
+#include <p9/parser/Parser.hh>
 
 #include "CompilerVisitor.hh"
 
 int main( void )
 {
-    /**
     std::istream & istream = std::cin;
 
     std::istreambuf_iterator< char > eos;
@@ -30,42 +31,16 @@ int main( void )
     p9::lexer::Lexer lexer( s.c_str( ), s.length( ) );
     p9::parser::Parser parser( lexer );
     p9::ast::Statement * ast = parser.exec( );
-    **/
 
-    p9::ast::Expression * returnValue1 = new p9::ast::expr::Number( 1 );
-    p9::ast::Statement  * returnStmt1  = new p9::ast::stmt::Return( returnValue1 );
-    p9::ast::Expression * function1    = new p9::ast::expr::Function( nullptr, returnStmt1 );
-
-    p9::ast::Expression * returnValue2 = new p9::ast::expr::Number( 2 );
-    p9::ast::Statement  * returnStmt2  = new p9::ast::stmt::Return( returnValue2 );
-    p9::ast::Expression * function2    = new p9::ast::expr::Function( nullptr, returnStmt2 );
-
-    p9::ast::Expression * returnValue3 = new p9::ast::expr::Number( 1 );
-    p9::ast::Statement  * returnStmt3  = new p9::ast::stmt::Return( returnValue3 );
-    p9::ast::Expression * function3    = new p9::ast::expr::Function( nullptr, returnStmt3 );
-
-    p9::ast::Expression * call1 = new p9::ast::expr::Call( function1, nullptr );
-    p9::ast::Expression * call2 = new p9::ast::expr::Call( function2, nullptr );
-    p9::ast::Expression * call3 = new p9::ast::expr::Call( function3, nullptr );
-
-    p9::ast::Statement  * returnStmt4_1 = new p9::ast::stmt::Return( call1 );
-    p9::ast::Statement  * returnStmt4_2 = new p9::ast::stmt::Return( call2 );
-
-    p9::ast::Statement  * if4          = new p9::ast::stmt::If( call3, returnStmt4_1, returnStmt4_2 );
-    p9::ast::Expression * returnValue4 = new p9::ast::expr::Number( 42 );
-    p9::ast::Statement  * returnStmt4  = new p9::ast::stmt::Return( returnValue4 );
-    p9::ast::Expression * function4    = new p9::ast::expr::Function( nullptr, if4 );
-
-    if4->next( returnStmt4 );
+    p9::ast::expr::Function * wrapper = new p9::ast::expr::Function( nullptr, ast );
 
     llvm::LLVMContext context;
     llvm::IRBuilder< > builder( context );
     llvm::Module module( "main", context );
 
     CompilerVisitor compilerVisitor( context, builder, module );
-    llvm::Function * program = static_cast< llvm::Function * >( compilerVisitor.codegen( *function4 ) );
-
-    module.dump( );
+    llvm::Value * programValue = compilerVisitor.codegen( *wrapper );
+    llvm::Function * program = static_cast< llvm::Function * >( programValue );
 
     std::string errString;
     llvm::InitializeNativeTarget();
