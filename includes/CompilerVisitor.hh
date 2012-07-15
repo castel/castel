@@ -11,6 +11,7 @@
 #include <p9/ast/expr/Function.hh>
 #include <p9/ast/expr/Number.hh>
 #include <p9/ast/stmt/Expression.hh>
+#include <p9/ast/stmt/If.hh>
 #include <p9/ast/stmt/Return.hh>
 #include <p9/ast/Token.hh>
 #include <p9/utils/Visitor.hh>
@@ -34,6 +35,7 @@ private:
     virtual void visit( p9::ast::expr::Number   & );
 
     virtual void visit( p9::ast::stmt::Expression & );
+    virtual void visit( p9::ast::stmt::If         & );
     virtual void visit( p9::ast::stmt::Return     & );
 
 private:

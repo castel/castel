@@ -1,14 +1,13 @@
 #include <p9/ast/stmt/Return.hh>
 
 #include "CompilerVisitor.hh"
-#include <iostream>
 
-void CompilerVisitor::visit( p9::ast::stmt::Return & astReturn )
+void CompilerVisitor::visit( p9::ast::stmt::Return & astReturnStatement )
 {
-    if ( astReturn.returnValue( ) ) {
-        astReturn.returnValue( )->accept( *this );
-        mValue.reset( mBuilder.CreateRet( mValue.release( ) ) );
+    if ( astReturnStatement.returnValue( ) ) {
+        astReturnStatement.returnValue( )->accept( *this );
+        mBuilder.CreateRet( mValue.release( ) );
     } else {
-        mValue.reset( mBuilder.CreateRetVoid( ) );
+        mBuilder.CreateRetVoid( );
     }
 }
