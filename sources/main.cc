@@ -18,8 +18,7 @@
 #include <p9/ast/Statement.hh>
 #include <p9/lexer/Lexer.hh>
 #include <p9/parser/Parser.hh>
-
-#include "CompilerVisitor.hh"
+#include <p9/engine/CodeGenerator.hh>
 
 int main( void )
 {
@@ -38,8 +37,8 @@ int main( void )
     llvm::IRBuilder< > builder( context );
     llvm::Module module( "main", context );
 
-    CompilerVisitor compilerVisitor( context, builder, module );
-    llvm::Value * programValue = compilerVisitor.codegen( *wrapper );
+    p9::engine::CodeGenerator codeGenerator( context, builder, module );
+    llvm::Value * programValue = codeGenerator.codegen( *wrapper );
     llvm::Function * program = static_cast< llvm::Function * >( programValue );
 
     std::string errString;
@@ -50,7 +49,7 @@ int main( void )
         throw std::runtime_error( errString );
 
     void * fPtr = engine->getPointerToFunction( program );
-    double (*callableFPtr)(void) = reinterpret_cast< double(*)(void) >( fPtr );
+    double (*callableFPtr)( void ) = reinterpret_cast< double (*)( void ) >( fPtr );
     std::cout << callableFPtr( ) << std::endl;
 
     return 0;

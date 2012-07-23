@@ -18,7 +18,7 @@ BROWN    = $(shell printf "\033[33m")
 EOS      = $(shell printf "\033[00m")
 
 CXXFLAGS += $(shell llvm-config --cxxflags) -fexceptions -std=c++11 -I./libp9/includes -I./includes -I.
-LDFLAGS  += $(shell llvm-config --ldflags) $(shell llvm-config --libs core jit native) -L./libp9/build -lp9
+LDFLAGS  += $(shell llvm-config --ldflags) $(shell llvm-config --libs core jit native) -L./libp9/build -lP9Engine -lP9Parse
 
 all: $(BINARY)
 	@printf "Compilation done, output is build/${BINARY}\n"
@@ -31,10 +31,10 @@ build/$(BINARY): $(OBJS) libp9/build/libp9.a
 	@printf "%s# Linking final executable.%s\n" "${PURPLE}" "${EOS}"
 	@${CXX} -o build/${BINARY} ${OBJS} ${LDFLAGS}
 
-libp9/build/libp9.a: build-libp9 ;
+libp9/build/libP9Parse.a libp9/build/libP9Engine: build-libp9 ;
 
 build-libp9:
-	@$(MAKE) -s -C libp9 libp9.a
+	@$(MAKE) -s -C libp9 libP9Parse.a libP9Engine.a
 
 $(DEPS): build/dependencies/%.d: %.cc
 	@printf "%s+ Generating dependency file for %s.%s\n" "${GREEN}" "${<}" "${EOS}"
