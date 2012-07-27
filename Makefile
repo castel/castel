@@ -27,7 +27,7 @@ $(BINARY): build/$(BINARY)
 
 -include $(DEPS)
 
-build/$(BINARY): $(OBJS) libp9/build/libp9.a
+build/$(BINARY): $(OBJS) libp9/build/libP9Parse.a libp9/build/libP9Engine.a
 	@printf "%s# Linking final executable.%s\n" "${PURPLE}" "${EOS}"
 	@${CXX} -o build/${BINARY} ${OBJS} ${LDFLAGS}
 
