@@ -7,7 +7,7 @@ RM        = rm
 SRCS      = $(shell find sources -name '*.cc')
 HDRS      = $(shell find includes -name '*.hh')
 OBJS      = $(addprefix build/objects/,$(SRCS:.cc=.o))
-DEPS      = $(addprefix build/dependencies/,$(SRCS:.cc=.d) $(HDRS:.hh=.d))
+DEPS      = $(addprefix build/dependencies/,$(SRCS:.cc=.d))
 
 PURPLE    = $(shell printf "\033[35m")
 CYAN      = $(shell printf "\033[36m")

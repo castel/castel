@@ -48,7 +48,7 @@ int main( void )
 
     switch ( result->type ) {
 
-        case p9::engine::Value::DoubleTy:
+        case p9::engine::Value::Type::Double:
             std::cout << "Returned a double" << std::endl;
             std::cout << result->doubleData.value << std::endl;
         break;
