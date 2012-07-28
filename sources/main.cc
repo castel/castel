@@ -15,6 +15,7 @@
 #include <p9/ast/Statement.hh>
 #include <p9/engine/CodeGenerator.hh>
 #include <p9/engine/GenerationEngine.hh>
+#include <p9/engine/Value.hh>
 #include <p9/lexer/Lexer.hh>
 #include <p9/parser/Parser.hh>
 
@@ -42,8 +43,17 @@ int main( void )
     if ( ! executionEngine ) throw std::runtime_error( errString );
 
     void * programPtr = executionEngine->getPointerToFunction( program );
-    double (*callableProgramPtr)( void ) = reinterpret_cast< double (*)( void ) >( programPtr );
-    std::cout << callableProgramPtr( ) << std::endl;
+    auto callableProgramPtr = reinterpret_cast< p9::engine::Value * (*)( void ) >( programPtr );
+    p9::engine::Value * result = callableProgramPtr( );
+
+    switch ( result->type ) {
+
+        case p9::engine::Value::DoubleTy:
+            std::cout << "Returned a double" << std::endl;
+            std::cout << result->doubleData.value << std::endl;
+        break;
+
+    }
 
     return 0;
 }
