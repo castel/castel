@@ -30,12 +30,9 @@ int main( void )
     p9::parser::Parser parser( lexer );
     p9::ast::Statement * ast = parser.exec( );
 
-    p9::ast::expr::Function * wrapper = new p9::ast::expr::Function( nullptr, ast );
-
     p9::engine::GenerationEngine generationEngine( "stdin" );
     p9::engine::CodeGenerator codeGenerator( generationEngine );
-    llvm::Value * programValue = codeGenerator.codegen( *wrapper );
-    llvm::Function * program = dynamic_cast< llvm::Function * >( programValue );
+    llvm::Function * program = codeGenerator.codegen( *ast );
 
     std::string errString;
     llvm::InitializeNativeTarget();
@@ -47,6 +44,10 @@ int main( void )
     p9::engine::Value * result = callableProgramPtr( );
 
     switch ( result->type ) {
+
+        case p9::engine::Value::Type::Function:
+            std::cout << "Returned a function" << std::endl;
+        break;
 
         case p9::engine::Value::Type::Double:
             std::cout << "Returned a double" << std::endl;
