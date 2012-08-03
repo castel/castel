@@ -15,8 +15,8 @@ GREEN     = $(shell printf "\033[32m")
 BROWN     = $(shell printf "\033[33m")
 EOS       = $(shell printf "\033[00m")
 
-CXXFLAGS  = -g -O0 -fPIC
-CXXFLAGS += $(shell llvm-config --cxxflags) -fexceptions -std=c++11 -I./libp9/includes -I./includes -I.
+CXXFLAGS  = -fPIC
+CXXFLAGS += $(shell llvm-config --cxxflags) -fexceptions -std=c++11 -I./libp9/includes -I./includes -I. -g -O0
 LDFLAGS  += $(shell llvm-config --ldflags) $(shell llvm-config --libs core jit native) -rdynamic -L./libp9/build -lP9Engine -lP9Parse -Wl,--whole-archive -lP9Runtime -Wl,--no-whole-archive
 
 all: $(BINARY)

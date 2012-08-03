@@ -34,6 +34,8 @@ int main( void )
     p9::engine::CodeGenerator codeGenerator( generationEngine );
     llvm::Function * program = codeGenerator.codegen( *ast );
 
+    generationEngine.module( ).dump( );
+
     std::string errString;
     llvm::InitializeNativeTarget();
     llvm::ExecutionEngine * executionEngine = llvm::EngineBuilder( &( generationEngine.module( ) ) ).setErrorStr( &( errString ) ).create( );
