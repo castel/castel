@@ -1,4 +1,4 @@
-BINARY    = p9c
+BINARY    = castelc
 
 CXX       = clang++
 MKDIR     = mkdir
@@ -16,8 +16,8 @@ BROWN     = $(shell printf "\033[33m")
 EOS       = $(shell printf "\033[00m")
 
 CXXFLAGS  = -fPIC
-CXXFLAGS += $(shell llvm-config --cxxflags) -fexceptions -std=c++11 -I./libp9/includes -I./includes -I. -g -O0
-LDFLAGS  += $(shell llvm-config --ldflags) $(shell llvm-config --libs core jit native) -rdynamic -L./libp9/build -lP9Engine -lP9Parse -Wl,--whole-archive -lP9Runtime -Wl,--no-whole-archive
+CXXFLAGS += $(shell llvm-config --cxxflags) -fexceptions -std=c++11 -I./libcastel/includes -I./includes -I. -g -O0
+LDFLAGS  += $(shell llvm-config --ldflags) $(shell llvm-config --libs core jit native) -rdynamic -L./libcastel/build -lCastelEngine -lCastelParse -Wl,--whole-archive -lCastelRuntime -Wl,--no-whole-archive
 
 all: $(BINARY)
 	@printf "Compilation done, output is build/${BINARY}\n"
@@ -26,16 +26,16 @@ $(BINARY): build/$(BINARY)
 
 -include $(DEPS)
 
-build/$(BINARY): $(OBJS) libp9/build/libP9Parse.a libp9/build/libP9Engine.a libp9/build/libP9Runtime.a
+build/$(BINARY): $(OBJS) libcastel/build/libCastelParse.a libcastel/build/libCastelEngine.a libcastel/build/libCastelRuntime.a
 	@printf "%s# Linking final executable.%s\n" "${PURPLE}" "${EOS}"
 	@${CXX} -o build/${BINARY} ${OBJS} ${LDFLAGS}
 
-libp9/build/libP9Parse.a libp9/build/libP9Engine.a libp9/build/libP9Runtime.a: build-libp9 ;
+libcastel/build/libCastelParse.a libcastel/build/libCastelEngine.a libcastel/build/libCastelRuntime.a: build-libcastel ;
 
-build-libp9:
-	@$(MAKE) -s -C libp9 libP9Parse.a libP9Engine.a libP9Runtime.a
+build-libcastel:
+	@$(MAKE) -s -C libcastel libCastelParse.a libCastelEngine.a libCastelRuntime.a
 
-$(DEPS): build/dependencies/%.d: %.cc
+$(DEPS): build/dependencies/%.d: %.cc | build-libcastel
 	@printf "%s+ Generating dependency file for %s.%s\n" "${GREEN}" "${<}" "${EOS}"
 	@${MKDIR} -p "$(dir ${@})"
 	@${CXX} ${CXXFLAGS} -MM -MG -MT "$(patsubst build/dependencies/%,build/objects/%,$(@:.d=.o))" "${<}" > $(@)
@@ -61,4 +61,4 @@ fclean: clean
 re: clean-dependencies fclean
 	@$(MAKE) --no-print-directory all
 
-.PHONY: $(BINARY) all clean fclean re clean-depends build-libp9
+.PHONY: $(BINARY) all clean fclean re clean-depends build-libcastel
