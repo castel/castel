@@ -1,6 +1,6 @@
 BINARY    = castelc
 
-CXX       = clang++
+CXX       = g++
 MKDIR     = mkdir
 RM        = rm
 
@@ -15,8 +15,9 @@ GREEN     = $(shell printf "\033[32m")
 BROWN     = $(shell printf "\033[33m")
 EOS       = $(shell printf "\033[00m")
 
-CXXFLAGS  = -fPIC
-CXXFLAGS += $(shell llvm-config --cxxflags) -fexceptions -std=c++11 -I./libcastel/includes -I./includes -I. -g -O0
+CXXFLAGS  = -fPIC -std=c++11 -I./libcastel/includes -I./includes -I.
+CXXFLAGS += -g3 -O0 $(shell llvm-config --cxxflags) -fexceptions -g3 -O0
+
 LDFLAGS  += $(shell llvm-config --ldflags) $(shell llvm-config --libs core jit native) -rdynamic -L./libcastel/build -lCastelEngine -lCastelParse -Wl,--whole-archive -lCastelRuntime -Wl,--no-whole-archive
 
 all: $(BINARY)
