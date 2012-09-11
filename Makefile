@@ -16,9 +16,9 @@ BROWN     = $(shell printf "\033[33m")
 EOS       = $(shell printf "\033[00m")
 
 CXXFLAGS  = -fPIC -std=c++11 -I./libcastel/includes -I./includes -I.
-CXXFLAGS += -g3 -O0 $(shell llvm-config --cxxflags) -fexceptions -g3 -O0
+CXXFLAGS += -g $(shell llvm-config --cppflags)
 
-LDFLAGS  += $(shell llvm-config --ldflags) $(shell llvm-config --libs core jit native) -rdynamic -L./libcastel/build -lCastelEngine -lCastelParse -Wl,--whole-archive -lCastelRuntime -Wl,--no-whole-archive
+LDFLAGS  += $(shell llvm-config --ldflags) $(shell llvm-config --libs core jit native) -rdynamic -L./libcastel/build -lCastelBuild -lCastelParse -Wl,--whole-archive -lCastelRuntime -Wl,--no-whole-archive
 
 all: $(BINARY)
 	@printf "Compilation done, output is build/${BINARY}\n"
@@ -27,14 +27,14 @@ $(BINARY): build/$(BINARY)
 
 -include $(DEPS)
 
-build/$(BINARY): $(OBJS) libcastel/build/libCastelParse.a libcastel/build/libCastelEngine.a libcastel/build/libCastelRuntime.a
+build/$(BINARY): $(OBJS) libcastel/build/libCastelParse.a libcastel/build/libCastelBuild.a libcastel/build/libCastelRuntime.a
 	@printf "%s# Linking final executable.%s\n" "${PURPLE}" "${EOS}"
 	@${CXX} -o build/${BINARY} ${OBJS} ${LDFLAGS}
 
-libcastel/build/libCastelParse.a libcastel/build/libCastelEngine.a libcastel/build/libCastelRuntime.a: build-libcastel ;
+libcastel/build/libCastelParse.a libcastel/build/libCastelBuild.a libcastel/build/libCastelRuntime.a: build-libcastel ;
 
 build-libcastel:
-	@$(MAKE) -s -C libcastel libCastelParse.a libCastelEngine.a libCastelRuntime.a
+	@$(MAKE) -s -C libcastel libCastelParse.a libCastelBuild.a libCastelRuntime.a
 
 $(DEPS): build/dependencies/%.d: %.cc | build-libcastel
 	@printf "%s+ Generating dependency file for %s.%s\n" "${GREEN}" "${<}" "${EOS}"

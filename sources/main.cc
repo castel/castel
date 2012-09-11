@@ -15,15 +15,18 @@
 #include <castel/ast/stmt/Return.hh>
 #include <castel/ast/Expression.hh>
 #include <castel/ast/Statement.hh>
-#include <castel/engine/CodeGenerator.hh>
-#include <castel/engine/GenerationEngine.hh>
-#include <castel/engine/Value.hh>
+#include <castel/builder/Context.hh>
+#include <castel/builder/CodeGenerator.hh>
 #include <castel/lexer/Lexer.hh>
 #include <castel/parser/Parser.hh>
+#include <castel/runtime/Box.hh>
+#include <castel/runtime/Function.hh>
+#include <castel/runtime/Number.hh>
 
 int main( int argc, char ** argv )
 {
-    std::ifstream istream( argc == 1 ? "/dev/stdin" : argv[ 1 ] );
+    char const * source = argc == 1 ? "/dev/stdin" : argv[ 1 ];
+    std::ifstream istream( source );
 
     std::istreambuf_iterator< char > eos;
     std::string s( std::istreambuf_iterator< char >( istream ), eos );
@@ -32,33 +35,24 @@ int main( int argc, char ** argv )
     castel::parser::Parser parser( lexer );
     castel::ast::Statement * ast = parser.exec( );
 
-    castel::engine::GenerationEngine generationEngine( "stdin" );
-    castel::engine::CodeGenerator codeGenerator( generationEngine );
-    llvm::Function * program = codeGenerator.codegen( *ast );
-
-    llvm::verifyModule( generationEngine.module( ) );
+    castel::builder::Context context( "stdin" );
+    castel::builder::CodeGenerator codeGenerator( context );
+    llvm::Function * program = codeGenerator.codegen( * ast );
 
     std::string errString;
-    llvm::InitializeNativeTarget();
-    llvm::ExecutionEngine * executionEngine = llvm::EngineBuilder( &( generationEngine.module( ) ) ).setErrorStr( &( errString ) ).create( );
+    llvm::InitializeNativeTarget( );
+    llvm::ExecutionEngine * executionEngine = llvm::EngineBuilder( &( context.llvmModule( ) ) ).setErrorStr( &( errString ) ).create( );
     if ( ! executionEngine ) throw std::runtime_error( errString );
 
     void * programPtr = executionEngine->getPointerToFunction( program );
-    auto callableProgramPtr = reinterpret_cast< castel::engine::Value * (*)( ) >( programPtr );
-    castel::engine::Value * result = callableProgramPtr( );
+    auto callableProgramPtr = reinterpret_cast< castel::runtime::Box * (*)( unsigned int, castel::runtime::Box ** ) >( programPtr );
+    castel::runtime::Box * result = callableProgramPtr( 0, nullptr );
 
-    switch ( result->type ) {
+    if ( dynamic_cast< castel::runtime::Function * >( result ) )
+        std::cout << "Returned a function" << std::endl;
 
-        case castel::engine::Value::Type::Function:
-            std::cout << "Returned a function" << std::endl;
-        break;
-
-        case castel::engine::Value::Type::Double:
-            std::cout << "Returned a double" << std::endl;
-            std::cout << result->doubleData.value << std::endl;
-        break;
-
-    }
+    if ( dynamic_cast< castel::runtime::Number * >( result ) )
+        std::cout << "Returned a number (" << static_cast< castel::runtime::Number * >( result )->number( ) << ")" << std::endl;
 
     return 0;
 }
