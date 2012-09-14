@@ -8,20 +8,17 @@
 #include <llvm/ExecutionEngine/JIT.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Value.h>
-#include <castel/ast/expr/Call.hh>
-#include <castel/ast/expr/Function.hh>
-#include <castel/ast/expr/Number.hh>
-#include <castel/ast/stmt/If.hh>
-#include <castel/ast/stmt/Return.hh>
-#include <castel/ast/Expression.hh>
 #include <castel/ast/Statement.hh>
 #include <castel/builder/Context.hh>
 #include <castel/builder/CodeGenerator.hh>
 #include <castel/lexer/Lexer.hh>
 #include <castel/parser/Parser.hh>
 #include <castel/runtime/Box.hh>
+#include <castel/runtime/Boolean.hh>
 #include <castel/runtime/Function.hh>
+#include <castel/runtime/Null.hh>
 #include <castel/runtime/Number.hh>
+#include <castel/runtime/Undefined.hh>
 
 int main( int argc, char ** argv )
 {
@@ -53,6 +50,15 @@ int main( int argc, char ** argv )
 
     if ( dynamic_cast< castel::runtime::Number * >( result ) )
         std::cout << "Returned a number (" << static_cast< castel::runtime::Number * >( result )->number( ) << ")" << std::endl;
+
+    if ( dynamic_cast< castel::runtime::Boolean * >( result ) )
+        std::cout << "Returned a boolean (" << static_cast< castel::runtime::Boolean * >( result )->boolean( ) << ")" << std::endl;
+
+    if ( dynamic_cast< castel::runtime::Null * >( result ) )
+        std::cout << "Returned a null value" << std::endl;
+
+    if ( dynamic_cast< castel::runtime::Undefined * >( result ) )
+        std::cout << "Returned an undefined value" << std::endl;
 
     return 0;
 }
