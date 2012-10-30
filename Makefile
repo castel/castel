@@ -1,6 +1,6 @@
 BINARY    = castelc
 
-CXX       = g++
+CXX       = clang++
 MKDIR     = mkdir
 RM        = rm
 
