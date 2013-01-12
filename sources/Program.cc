@@ -1,5 +1,7 @@
 #include <iostream>
+#include <map>
 #include <string>
+#include <utility>
 
 #include <castel/runtime/boxes/Bool.hh>
 #include <castel/runtime/boxes/Class.hh>
@@ -11,6 +13,8 @@
 #include <castel/runtime/boxes/Object.hh>
 #include <castel/runtime/boxes/String.hh>
 #include <castel/runtime/boxes/Undefined.hh>
+#include <castel/runtime/helper/create.hh>
+#include <castel/runtime/helper/memoize.hh>
 #include <castel/runtime/Box.hh>
 
 #include "Compiler.hh"
@@ -20,9 +24,22 @@
 
 int Program::run( int argc, char ** argv )
 {
+    Source source = Source::fromFile( argv[ 1 ] );
+
+    std::map< std::string, std::function< castel::runtime::Box * ( void ) > > globals;
+    globals[ "process" ] = castel::runtime::helper::memoize( std::function< castel::runtime::Box * ( void ) >( [ ] ( ) {
+        return castel::runtime::helper::create< castel::runtime::boxes::Number >( 42 );
+    } ) );
+
     Compiler compiler;
-    Runner runner = compiler.build( Source::fromFile( argv[ 1 ] ) );
-    castel::runtime::Box * box = runner( nullptr );
+    for ( auto & it : globals )
+        compiler.globals( ).push_back( it.first );
+
+    Runner runner = compiler.build( source );
+    for ( auto & it : globals )
+        runner.globals( )[ it.first ] = it.second;
+
+    castel::runtime::Box * box = runner( );
 
     if ( dynamic_cast< castel::runtime::boxes::Class * >( box ) )
         std::cout << "Returned a class" << std::endl;

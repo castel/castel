@@ -11,11 +11,11 @@ class Source
 
 public:
 
-    static inline Source * fromString( std::string const & code );
+    static inline Source fromString( std::string const & code );
 
-    static inline Source * fromFile( std::string const & filePath );
+    static inline Source fromFile( std::string const & filePath );
 
-    static inline Source * fromStream( std::istream & stream );
+    static inline Source fromStream( std::istream & stream );
 
 protected:
 
@@ -47,12 +47,12 @@ private:
 
 };
 
-Source * Source::fromString( std::string const & code )
+Source Source::fromString( std::string const & code )
 {
-    return new Source( "*inline*", code );
+    return Source( "*inline*", code );
 }
 
-Source * Source::fromFile( std::string const & filePath )
+Source Source::fromFile( std::string const & filePath )
 {
     std::ifstream stream( filePath );
 
@@ -62,15 +62,15 @@ Source * Source::fromFile( std::string const & filePath )
     std::istreambuf_iterator< char > eos;
     std::string code( std::istreambuf_iterator< char >( stream ), eos );
 
-    return new Source( fileName, code );
+    return Source( fileName, code );
 }
 
-Source * Source::fromStream( std::istream & stream )
+Source Source::fromStream( std::istream & stream )
 {
     std::istreambuf_iterator< char > eos;
     std::string code( std::istreambuf_iterator< char >( stream ), eos );
 
-    return new Source( "*stream*", code );
+    return Source( "*stream*", code );
 }
 
 Source::Source( std::string const & name, std::string const & code )
