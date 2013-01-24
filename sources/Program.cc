@@ -3,7 +3,7 @@
 #include <string>
 #include <utility>
 
-#include <castel/runtime/boxes/Bool.hh>
+#include <castel/runtime/boxes/Boolean.hh>
 #include <castel/runtime/boxes/Class.hh>
 #include <castel/runtime/boxes/Dict.hh>
 #include <castel/runtime/boxes/Function.hh>
@@ -15,27 +15,29 @@
 #include <castel/runtime/boxes/Undefined.hh>
 #include <castel/runtime/helper/create.hh>
 #include <castel/runtime/helper/memoize.hh>
+#include <castel/runtime/helper/wrap.hh>
 #include <castel/runtime/Box.hh>
+#include <castel/runtime/Module.hh>
+#include <castel/toolchain/Compiler.hh>
+#include <castel/toolchain/Runner.hh>
+#include <castel/toolchain/Source.hh>
 
-#include "Compiler.hh"
 #include "Program.hh"
-#include "Runner.hh"
-#include "Source.hh"
 
 int Program::run( int argc, char ** argv )
 {
-    Source source = Source::fromFile( argv[ 1 ] );
+    castel::toolchain::Source source = castel::toolchain::Source::fromFile( argv[ 1 ] );
 
     std::map< std::string, std::function< castel::runtime::Box * ( void ) > > globals;
-    globals[ "process" ] = castel::runtime::helper::memoize( std::function< castel::runtime::Box * ( void ) >( [ ] ( ) {
-        return castel::runtime::helper::create< castel::runtime::boxes::Number >( 42 );
+    globals[ "std" ] = castel::runtime::helper::memoize( std::function< castel::runtime::Box * ( void ) >( [ ] ( ) {
+        return castel::runtime::helper::wrap( & test );
     } ) );
 
-    Compiler compiler;
+    castel::toolchain::Compiler compiler;
     for ( auto & it : globals )
         compiler.globals( ).push_back( it.first );
 
-    Runner runner = compiler.build( source );
+    castel::toolchain::Runner runner( compiler.build( source ) );
     for ( auto & it : globals )
         runner.globals( )[ it.first ] = it.second;
 
@@ -50,8 +52,8 @@ int Program::run( int argc, char ** argv )
     if ( dynamic_cast< castel::runtime::boxes::Number * >( box ) )
         std::cout << "Returned a number (" << static_cast< castel::runtime::boxes::Number * >( box )->value( ) << ")" << std::endl;
 
-    if ( dynamic_cast< castel::runtime::boxes::Bool * >( box ) )
-        std::cout << "Returned a boolean (" << static_cast< castel::runtime::boxes::Bool * >( box )->value( ) << ")" << std::endl;
+    if ( dynamic_cast< castel::runtime::boxes::Boolean * >( box ) )
+        std::cout << "Returned a boolean (" << static_cast< castel::runtime::boxes::Boolean * >( box )->value( ) << ")" << std::endl;
 
     if ( dynamic_cast< castel::runtime::boxes::String * >( box ) )
         std::cout << "Return a string (" << static_cast< castel::runtime::boxes::String * >( box )->value( ) << ")" << std::endl;
