@@ -57,7 +57,12 @@ castel::runtime::Box * Program::execute( castel::toolchain::Source source )
 
 int Program::run( int argc, char ** argv )
 {
-    castel::runtime::Box * box = this->execute( castel::toolchain::Source::fromFile( argv[ 1 ] ) );
+    castel::runtime::Box * box;
+
+    if ( argc >= 2 )
+        box = this->execute( castel::toolchain::Source::fromFile( argv[ 1 ] ) );
+    else
+        box = this->execute( castel::toolchain::Source::fromStream( std::cin ) );
 
     if ( dynamic_cast< castel::runtime::boxes::Class * >( box ) )
         std::cout << "Returned a class" << std::endl;
