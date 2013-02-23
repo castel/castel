@@ -1,3 +1,4 @@
+#include <functional>
 #include <iostream>
 #include <map>
 #include <string>
@@ -24,14 +25,24 @@
 
 #include "Program.hh"
 
-int Program::run( int argc, char ** argv )
+std::map< std::string, std::function< castel::runtime::Box * ( void ) > > const & Program::standardGlobals( void )
 {
-    castel::toolchain::Source source = castel::toolchain::Source::fromFile( argv[ 1 ] );
+    static std::map< std::string, std::function< castel::runtime::Box * ( void ) > > globals;
+    static bool initialized = false;
 
-    std::map< std::string, std::function< castel::runtime::Box * ( void ) > > globals;
-    globals[ "std" ] = castel::runtime::helper::memoize( std::function< castel::runtime::Box * ( void ) >( [ ] ( ) {
-        return castel::runtime::helper::wrap( & test );
+    if ( initialized ) return globals;
+    initialized = true;
+
+    globals[ "Class" ] = castel::runtime::helper::memoize( std::function< castel::runtime::Box * ( void ) >( [ ] ( ) {
+        return Castel_Class_initialize( nullptr );
     } ) );
+
+    return globals;
+}
+
+castel::runtime::Box * Program::execute( castel::toolchain::Source source )
+{
+    std::map< std::string, std::function< castel::runtime::Box * ( void ) > > globals( Program::standardGlobals( ) );
 
     castel::toolchain::Compiler compiler;
     for ( auto & it : globals )
@@ -41,7 +52,12 @@ int Program::run( int argc, char ** argv )
     for ( auto & it : globals )
         runner.globals( )[ it.first ] = it.second;
 
-    castel::runtime::Box * box = runner( );
+    return runner( );
+}
+
+int Program::run( int argc, char ** argv )
+{
+    castel::runtime::Box * box = this->execute( castel::toolchain::Source::fromFile( argv[ 1 ] ) );
 
     if ( dynamic_cast< castel::runtime::boxes::Class * >( box ) )
         std::cout << "Returned a class" << std::endl;
