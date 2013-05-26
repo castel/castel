@@ -19,6 +19,7 @@
 #include <castel/runtime/helper/wrap.hh>
 #include <castel/runtime/Box.hh>
 #include <castel/runtime/Module.hh>
+#include <castel/runtime/interface.hh>
 #include <castel/toolchain/Compiler.hh>
 #include <castel/toolchain/Runner.hh>
 #include <castel/toolchain/Source.hh>
@@ -52,7 +53,12 @@ castel::runtime::Box * Program::execute( castel::toolchain::Source source )
     for ( auto & it : globals )
         runner.globals( )[ it.first ] = it.second;
 
-    return runner( );
+    try {
+        return runner( );
+    } catch ( ... ) {
+        std::cout << "An uncaught Castel exception has occured !" << std::endl;
+        return nullptr;
+    }
 }
 
 int Program::run( int argc, char ** argv )
