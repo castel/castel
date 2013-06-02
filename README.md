@@ -4,7 +4,7 @@ Please see the [official homepage](http://castel.github.com) for more informatio
 
 ## Compilation
 
-You will need LLVM 3.2, Ragel, Lemon, Clang and CMake.
+You will need LLVM 3.2, Ragel, Lemon, Clang, Boost, Readline and CMake.
 
 The LibCastel is included as a git submodule. Don't forget to init them before starting compilation.
 

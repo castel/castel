@@ -1,9 +1,15 @@
+#include <cstdlib>
 #include <functional>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include <castel/ast/Statement.hh>
+#include <castel/lex/Exception.hh>
+#include <castel/parse/Exception.hh>
 #include <castel/runtime/boxes/Boolean.hh>
 #include <castel/runtime/boxes/Class.hh>
 #include <castel/runtime/boxes/Dict.hh>
@@ -23,8 +29,14 @@
 #include <castel/toolchain/Compiler.hh>
 #include <castel/toolchain/Runner.hh>
 #include <castel/toolchain/Source.hh>
+#include <llvm/Assembly/PrintModulePass.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Module.h>
+#include <llvm/PassManager.h>
+#include <readline/readline.h>
 
 #include "Program.hh"
+#include "REPL.hh"
 
 std::map< std::string, std::function< castel::runtime::Box * ( void ) > > const & Program::standardGlobals( void )
 {
@@ -41,64 +53,130 @@ std::map< std::string, std::function< castel::runtime::Box * ( void ) > > const 
     return globals;
 }
 
-castel::runtime::Box * Program::execute( castel::toolchain::Source source )
+castel::toolchain::Source Program::makeSource( std::string const & from ) const
 {
-    std::map< std::string, std::function< castel::runtime::Box * ( void ) > > globals( Program::standardGlobals( ) );
-
-    castel::toolchain::Compiler compiler;
-    for ( auto & it : globals )
-        compiler.globals( ).push_back( it.first );
-
-    castel::toolchain::Runner runner( compiler.build( source ) );
-    for ( auto & it : globals )
-        runner.globals( )[ it.first ] = it.second;
-
-    try {
-        return runner( );
-    } catch ( ... ) {
-        std::cout << "An uncaught Castel exception has occured !" << std::endl;
-        return nullptr;
+    if ( from == "-" ) {
+        return castel::toolchain::Source::fromStream( std::cin );
+    } else {
+        return castel::toolchain::Source::fromFile( from );
     }
 }
 
-int Program::run( int argc, char ** argv )
+std::string Program::formatBox( castel::runtime::Box * box ) const
 {
-    castel::runtime::Box * box;
-
-    if ( argc >= 2 )
-        box = this->execute( castel::toolchain::Source::fromFile( argv[ 1 ] ) );
-    else
-        box = this->execute( castel::toolchain::Source::fromStream( std::cin ) );
+    std::ostringstream ss;
 
     if ( dynamic_cast< castel::runtime::boxes::Class * >( box ) )
-        std::cout << "Returned a class" << std::endl;
+        ss << "<Class>";
 
     if ( dynamic_cast< castel::runtime::boxes::Function * >( box ) )
-        std::cout << "Returned a function" << std::endl;
+        ss << "<Function>";
 
     if ( dynamic_cast< castel::runtime::boxes::Number * >( box ) )
-        std::cout << "Returned a number (" << static_cast< castel::runtime::boxes::Number * >( box )->value( ) << ")" << std::endl;
+        ss << "<Number : " << static_cast< castel::runtime::boxes::Number * >( box )->value( ) << ">";
 
     if ( dynamic_cast< castel::runtime::boxes::Boolean * >( box ) )
-        std::cout << "Returned a boolean (" << static_cast< castel::runtime::boxes::Boolean * >( box )->value( ) << ")" << std::endl;
+        ss << "<Boolean : " << static_cast< castel::runtime::boxes::Boolean * >( box )->value( ) << ">";
 
     if ( dynamic_cast< castel::runtime::boxes::String * >( box ) )
-        std::cout << "Return a string (" << static_cast< castel::runtime::boxes::String * >( box )->value( ) << ")" << std::endl;
+        ss << "<String : " << static_cast< castel::runtime::boxes::String * >( box )->value( ) << ">";
 
     if ( dynamic_cast< castel::runtime::boxes::Null * >( box ) )
-        std::cout << "Returned a null value" << std::endl;
+        ss << "<Null>";
 
     if ( dynamic_cast< castel::runtime::boxes::Undefined * >( box ) )
-        std::cout << "Returned an undefined value" << std::endl;
+        ss << "<Undefined>";
 
     if ( dynamic_cast< castel::runtime::boxes::Dict * >( box ) )
-        std::cout << "Returned a dict" << std::endl;
+        ss << "<Dict>";
 
     if ( dynamic_cast< castel::runtime::boxes::List * >( box ) )
-        std::cout << "Returned a list" << std::endl;
+        ss << "<List>";
 
     if ( dynamic_cast< castel::runtime::boxes::Object * >( box ) )
-        std::cout << "Returned an object" << std::endl;
+        ss << "<Instance>";
+
+    return ss.str( );
+}
+
+int Program::help( void ) const
+{
+    std::cerr << mOptionBag.usageString( );
+
+    return 1;
+}
+
+int Program::checkSyntax( void ) const
+{
+    std::cerr << "Not yet implemented." << std::endl;
+
+    return 1;
+}
+
+int Program::emitLLVM( void ) const
+{
+    /*
+    if ( mOptionBag.inputFile( ) == "" )
+        return this->help( );
+
+    castel::toolchain::Compiler compiler;
+    for ( auto & it : Program::standardGlobals( ) )
+        compiler.globals( ).push_back( it.first );
+
+    llvm::Module * module;
+    try { module = compiler.build( this->makeSource( mOptionBag.inputFile( ) ).parse( ) );
+    } catch ( ... ) { throw ; }
+
+    llvm::PassManager passManager;
+    passManager.add( llvm::createPrintModulePass( & llvm::outs( ) ) );
+    passManager.run( * module );
+    */
 
     return 0;
+}
+
+int Program::interpret( void ) const
+{
+    /*
+    castel::ast::Statement * statements = this->makeSource( mOptionBag.inputFile( ) ).parse( );
+
+    castel::toolchain::Compiler compiler;
+    for ( auto & it : Program::standardGlobals( ) )
+        compiler.globals( ).push_back( it.first );
+
+    llvm::Module * module = compiler.build( this->makeSource( mOptionBag.inputFile( ) ).parse( ) );
+
+    castel::toolchain::Runner runner( module );
+    for ( auto & it : Program::standardGlobals( ) )
+        runner.globals( )[ it.first ] = it.second;
+
+    castel::runtime::Box * box;
+    try { box = runner( ); }
+    catch ( ... ) { throw ; }
+
+    if ( dynamic_cast< castel::runtime::boxes::Undefined * >( box ) == nullptr )
+        std::cout << "Program returned " << this->formatBox( box ) << std::endl;
+    */
+
+    return 0;
+}
+
+int Program::run( void ) const
+{
+    if ( mOptionBag.help( ) ) {
+        return this->help( );
+
+    } else if ( mOptionBag.checkSyntax( ) ) {
+        return this->checkSyntax( );
+
+    } else if ( mOptionBag.emitLLVM( ) ) {
+        return this->emitLLVM( );
+
+    } else if ( mOptionBag.inputFile( ) != "" ) {
+        return this->interpret( );
+
+    } else {
+        return REPL( ).run( );
+
+    }
 }

@@ -2,5 +2,5 @@
 
 int main( int argc, char ** argv )
 {
-    return Program( ).run( argc, argv );
+    return Program( argc, argv ).run( );
 }

@@ -35,5 +35,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 include_directories("${CMAKE_BINARY_DIR}/includes")
 
 add_executable(castelc ${CASTELC_HEADERS} ${CASTELC_SOURCES})
-target_link_libraries(castelc unwind -Wl,-whole-archive CastelRuntime -Wl,-no-whole-archive CastelCompile CastelParse ${LLVM_LIBS})
+target_link_libraries(castelc boost_program_options unwind readline -Wl,-whole-archive CastelRuntime -Wl,-no-whole-archive CastelCompile CastelParse ${LLVM_LIBS})
 set_target_properties(castelc PROPERTIES LINK_FLAGS "-rdynamic ${LLVM_LDFLAGS}")
