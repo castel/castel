@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 
+#include <castel/ast/tools/List.hh>
 #include <castel/ast/Statement.hh>
 #include <castel/runtime/Box.hh>
 #include <castel/toolchain/Compiler.hh>
@@ -21,11 +22,11 @@ public:
 
 private:
 
-    castel::ast::Statement * parse( char * line );
+    castel::ast::tools::List< castel::ast::Statement > parse( char * line );
 
-    castel::ast::Statement * wrap( castel::ast::Statement * statements );
+    void wrap( castel::ast::tools::List< castel::ast::Statement > & statements );
 
-    castel::runtime::Box * execute( castel::ast::Statement * statement );
+    castel::runtime::Box * execute( castel::ast::tools::List< castel::ast::Statement > const & statement );
 
     std::string format( castel::runtime::Box * box );
 

@@ -44,81 +44,78 @@ REPL::REPL( void )
     } );
 }
 
-castel::ast::Statement * REPL::parse( char * line )
+castel::ast::tools::List< castel::ast::Statement > REPL::parse( char * line )
 {
     std::string string = line;
     std::free( line );
 
-    castel::ast::Statement * statements;
+    castel::ast::tools::List< castel::ast::Statement > statements =
+        castel::toolchain::Source::fromString( string ).parse( );
 
-    try {
-        statements = castel::toolchain::Source::fromString( string ).parse( );
-    }
-
-    catch ( castel::lex::Exception & exception ) {
-        std::cerr << exception.what( ) << std::endl;
-        return nullptr;
-    }
-
-    catch ( castel::parse::Exception & exception ) {
-        std::cerr << exception.what( ) << std::endl;
-        return nullptr;
-    }
-
-    if ( statements == nullptr )
-        return nullptr;
-
-    return this->wrap( statements );
+    this->wrap( statements );
+    return statements;
 }
 
-castel::ast::Statement * REPL::wrap( castel::ast::Statement * statements )
+template < typename T >
+using Hold = castel::ast::tools::Hold< T >;
+
+void REPL::wrap( castel::ast::tools::List< castel::ast::Statement > & statements )
 {
+    using Dict = castel::ast::expr::literal::Dict;
+    using Function = castel::ast::expr::literal::Function;
+    using Multary = castel::ast::expr::Multary;
+    using Return = castel::ast::stmt::Return;
+    using String = castel::ast::expr::literal::String;
+    using Variables = castel::ast::stmt::decl::Variables;
+    using Variable = castel::ast::expr::Variable;
+
     REPLVisitor replVisitor;
-    for ( auto & statement : statements )
-        replVisitor.run( statement );
+    replVisitor.run( statements );
 
     for ( auto & symbol : replVisitor.symbols( ) )
         mSymbols.insert( symbol );
 
-    /* a = __castel_context["variables"]["a"], ...; */
-    castel::ast::stmt::decl::Variables::Variable * variableDeclarations = nullptr;
-    for ( auto & symbol : mSymbols )
-        variableDeclarations = & ( ( new castel::ast::stmt::decl::Variables::Variable(
-            symbol, ( new castel::ast::expr::Multary( castel::ast::expr::Multary::Operator::Subscript, & (
-                ( new castel::ast::expr::Multary( castel::ast::expr::Multary::Operator::Subscript, & (
-                    ( new castel::ast::expr::Variable( "__castel_context" ) )
-                    ->next( ( new castel::ast::expr::literal::String( "variables" ) ) ) ) ) )
-                ->next( ( new castel::ast::expr::literal::String( symbol ) ) ) ) ) ) ) )
-        ->next( variableDeclarations ) );
+    /* var a = __castel_context["variables"]["a"], ...; */
+    Hold< Variables > preExecutionDeclarations( new Variables( ) );
 
-    /* "a": a, ... */
-    castel::ast::expr::literal::Dict::Item * variableStorage = nullptr;
-    for ( auto & symbol : mSymbols )
-        variableStorage = & ( ( new castel::ast::expr::literal::Dict::Item(
-            symbol, ( new castel::ast::expr::Variable( symbol ) )
-        ) )->next( variableStorage ) );
+    for ( auto & symbol : mSymbols ) {
+        Hold< Multary > variables( new Multary( Multary::Operator::Subscript, { } ) );
+        variables->operands( ).push_back( Hold< Variable >( new Variable( "__castel_context" ) ) );
+        variables->operands( ).push_back( Hold< String >( new String( "variables" ) ) );
+        Hold< Multary > value( new Multary( Multary::Operator::Subscript, { } ) );
+        value->operands( ).push_back( std::move( variables ) );
+        value->operands( ).push_back( Hold< String >( new String( symbol ) ) );
+        Hold< Variables::Item > variable( new Variables::Item( symbol, std::move( value ) ) );
+        preExecutionDeclarations->variables( ).push_back( std::move( variable ) );
+    }
 
-    /* { "variables": variableStorage, "return": ( function ( ) { [...] } )( ) } */
-    castel::ast::expr::literal::Dict::Item * returnedDict = & (
-        ( new castel::ast::expr::literal::Dict::Item( "return",
-            ( new castel::ast::expr::Multary( castel::ast::expr::Multary::Operator::Call,
-                ( new castel::ast::expr::literal::Function( nullptr,
-                    ( statements ) ) ) ) ) ) )
-        ->next( ( new castel::ast::expr::literal::Dict::Item( "variables",
-            ( new castel::ast::expr::literal::Dict( variableStorage ) ) ) ) ) );
+    /* { "a": a, ... } */
+    Hold< Dict > postExecutionDump( new Dict( ) );
+
+    for ( auto & symbol : mSymbols ) {
+        Hold< Variable > variable( new Variable( symbol ) );
+        Hold< Dict::Item > item( new Dict::Item( symbol, std::move( variable ) ) );
+        postExecutionDump->items( ).push_back( std::move( item ) );
+    }
+
+    /* { "return": ( function ( ) { [...] } )( ), "variables": variableStorage } */
+    Hold< Dict > replData( new Dict( ) );
+
+    if ( true ) {
+        Hold< Multary > functionCall( new Multary( Multary::Operator::Call, { } ) );
+        functionCall->operands( ).push_back( Hold< Function >( new Function( { }, std::move( statements ) ) ) );
+        replData->items( ).push_back( Hold< Dict::Item >( new Dict::Item( "return", std::move( functionCall ) ) ) );
+        replData->items( ).push_back( Hold< Dict::Item >( new Dict::Item( "variables", std::move( postExecutionDump ) ) ) );
+    }
 
     /* var [...]; return [...]; */
-    castel::ast::Statement * wrappedStatements = & (
-        ( new castel::ast::stmt::decl::Variables( variableDeclarations ) )
-        ->next( ( new castel::ast::stmt::Return(
-            ( new castel::ast::expr::literal::Dict( returnedDict ) ) ) ) ) );
-
-    return wrappedStatements;
+    statements.push_back( std::move( preExecutionDeclarations ) );
+    statements.push_back( Hold< Return >( new Return( std::move( replData ) ) ) );
 }
 
-castel::runtime::Box * REPL::execute( castel::ast::Statement * statement )
+castel::runtime::Box * REPL::execute( castel::ast::tools::List< castel::ast::Statement > const & statements )
 {
-    llvm::Module * module = mCompiler.build( statement );
+    llvm::Module * module = mCompiler.build( statements );
 
     mLastContext = mRunner.run( module );
 
@@ -172,12 +169,11 @@ int REPL::run( void )
 {
     for ( char * line; ( line = readline( "> " ) ) != nullptr; ) {
 
-        castel::ast::Statement * statements = this->parse( line );
-        if ( statements == nullptr ) continue ;
+        castel::ast::tools::List< castel::ast::Statement > statements = this->parse( line );
 
         castel::runtime::Box * box = this->execute( statements );
 
-        if ( dynamic_cast< castel::runtime::boxes::Undefined * >( box ) == nullptr ) {
+        if ( ! dynamic_cast< castel::runtime::boxes::Undefined * >( box ) ) {
             this->print( box );
         }
 
