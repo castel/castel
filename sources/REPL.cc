@@ -44,13 +44,10 @@ REPL::REPL( void )
     } );
 }
 
-castel::ast::tools::List< castel::ast::Statement > REPL::parse( char * line )
+castel::ast::tools::List< castel::ast::Statement > REPL::parse( std::string const & line )
 {
-    std::string string = line;
-    std::free( line );
-
     castel::ast::tools::List< castel::ast::Statement > statements =
-        castel::toolchain::Source::fromString( string ).parse( );
+        castel::toolchain::Source::fromString( line ).parse( );
 
     this->wrap( statements );
     return statements;
@@ -167,11 +164,27 @@ void REPL::print( castel::runtime::Box * box )
 
 int REPL::run( void )
 {
-    for ( char * line; ( line = readline( "> " ) ) != nullptr; ) {
+    for ( std::unique_ptr< char > line; line.reset( readline( "> " ) ), line; ) {
 
-        castel::ast::tools::List< castel::ast::Statement > statements = this->parse( line );
+        castel::ast::tools::List< castel::ast::Statement > statements;
+        castel::runtime::Box * box;
 
-        castel::runtime::Box * box = this->execute( statements );
+        try {
+            statements = this->parse( line.get( ) );
+        } catch ( castel::lex::Exception const & e ) {
+            std::cerr << "Syntax error : " << e.what( ) << std::endl;
+            continue ;
+        } catch ( castel::parse::Exception const & e ) {
+            std::cerr << "Syntax error : " << e.what( ) << std::endl;
+            continue ;
+        }
+
+        try {
+            box = this->execute( statements );
+        } catch ( ... ) {
+            std::cerr << "An exception occured" << std::endl;
+            continue ;
+        }
 
         if ( ! dynamic_cast< castel::runtime::boxes::Undefined * >( box ) ) {
             this->print( box );

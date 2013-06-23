@@ -22,7 +22,7 @@ public:
 
 private:
 
-    castel::ast::tools::List< castel::ast::Statement > parse( char * line );
+    castel::ast::tools::List< castel::ast::Statement > parse( std::string const & line );
 
     void wrap( castel::ast::tools::List< castel::ast::Statement > & statements );
 
