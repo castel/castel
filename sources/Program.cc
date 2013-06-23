@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include <castel/ast/tools/List.hh>
 #include <castel/ast/Statement.hh>
 #include <castel/lex/Exception.hh>
 #include <castel/parse/Exception.hh>
@@ -115,48 +116,39 @@ int Program::checkSyntax( void ) const
 
 int Program::emitLLVM( void ) const
 {
-    /*
-    if ( mOptionBag.inputFile( ) == "" )
-        return this->help( );
-
     castel::toolchain::Compiler compiler;
+
     for ( auto & it : Program::standardGlobals( ) )
         compiler.globals( ).push_back( it.first );
 
-    llvm::Module * module;
-    try { module = compiler.build( this->makeSource( mOptionBag.inputFile( ) ).parse( ) );
-    } catch ( ... ) { throw ; }
+    castel::ast::tools::List< castel::ast::Statement > statements = this->makeSource( mOptionBag.inputFile( ) ).parse( );
+
+    llvm::Module * module = compiler.build( statements );
 
     llvm::PassManager passManager;
     passManager.add( llvm::createPrintModulePass( & llvm::outs( ) ) );
     passManager.run( * module );
-    */
 
     return 0;
 }
 
 int Program::interpret( void ) const
 {
-    /*
-    castel::ast::Statement * statements = this->makeSource( mOptionBag.inputFile( ) ).parse( );
-
     castel::toolchain::Compiler compiler;
-    for ( auto & it : Program::standardGlobals( ) )
+    castel::toolchain::Runner runner;
+
+    for ( auto & it : Program::standardGlobals( ) ) {
         compiler.globals( ).push_back( it.first );
-
-    llvm::Module * module = compiler.build( this->makeSource( mOptionBag.inputFile( ) ).parse( ) );
-
-    castel::toolchain::Runner runner( module );
-    for ( auto & it : Program::standardGlobals( ) )
         runner.globals( )[ it.first ] = it.second;
+    }
 
-    castel::runtime::Box * box;
-    try { box = runner( ); }
-    catch ( ... ) { throw ; }
+    castel::ast::tools::List< castel::ast::Statement > statements = this->makeSource( mOptionBag.inputFile( ) ).parse( );
+
+    llvm::Module * module = compiler.build( statements );
+    castel::runtime::Box * box = runner.run( module );
 
     if ( dynamic_cast< castel::runtime::boxes::Undefined * >( box ) == nullptr )
         std::cout << "Program returned " << this->formatBox( box ) << std::endl;
-    */
 
     return 0;
 }
