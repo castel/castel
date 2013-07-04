@@ -8,7 +8,7 @@
 #include <castel/runtime/Box.hh>
 #include <castel/toolchain/Runner.hh>
 #include <castel/toolchain/Source.hh>
-#include <llvm/Module.h>
+#include <llvm/IR/Module.h>
 
 #include "OptionBag.hh"
 
