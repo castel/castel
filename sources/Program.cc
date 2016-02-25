@@ -16,8 +16,8 @@
 #include <castel/runtime/boxes/Undefined.hh>
 #include <castel/runtime/Box.hh>
 #include <castel/toolchain/Source.hh>
-#include <llvm/Assembly/PrintModulePass.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/IR/IRPrintingPasses.h>
 #include <llvm/IR/Module.h>
 #include <llvm/PassManager.h>
 
@@ -93,7 +93,7 @@ int Program::emitLLVM( void ) const
     llvm::Module * module = evaluator.compile( source );
 
     llvm::PassManager passManager;
-    passManager.add( llvm::createPrintModulePass( & llvm::outs( ) ) );
+    passManager.add( llvm::createPrintModulePass( llvm::outs( ) ) );
     passManager.run( * module );
 
     return 0;

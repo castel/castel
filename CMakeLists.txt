@@ -26,14 +26,12 @@ find_package(LLVM)
 
 add_subdirectory(libcastel)
 
-execute_process(COMMAND llvm-config --cppflags COMMAND tr -d "\\n" OUTPUT_VARIABLE LLVM_CPP_FLAGS)
-
-set(CMAKE_CXX_COMPILER clang++)
-set(CMAKE_CXX_FLAGS "-std=c++11 ${LLVM_CPP_FLAGS}")
+set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_CXX_FLAGS "-std=c++14 ${LLVM_CXX_FLAGS}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 include_directories("${CMAKE_BINARY_DIR}/includes")
 
 add_executable(castelc ${CASTELC_HEADERS} ${CASTELC_SOURCES})
-target_link_libraries(castelc boost_program_options boost_filesystem boost_system unwind readline -Wl,-whole-archive CastelRuntime -Wl,-no-whole-archive CastelCompile CastelParse ${LLVM_LIBS})
-set_target_properties(castelc PROPERTIES LINK_FLAGS "-rdynamic ${LLVM_LDFLAGS}")
+target_link_libraries(castelc boost_program_options boost_filesystem boost_system unwind readline -Wl,-whole-archive CastelRuntime -Wl,-no-whole-archive CastelCompile CastelParse ${LLVM_LIBRARIES_ALL})
+set_target_properties(castelc PROPERTIES LINK_FLAGS "-rdynamic ${LLVM_LINK_FLAGS}")

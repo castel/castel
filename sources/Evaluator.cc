@@ -10,8 +10,8 @@
 #include <castel/runtime/helper/wrap.hh>
 #include <castel/runtime/interface.hh>
 #include <castel/toolchain/Source.hh>
-#include <llvm/Analysis/Verifier.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Verifier.h>
 
 #include "Evaluator.hh"
 #include "require.hh"
