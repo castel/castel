@@ -18,8 +18,8 @@
 #include <castel/toolchain/Source.hh>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/IR/IRPrintingPasses.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
-#include <llvm/PassManager.h>
 
 #include "Evaluator.hh"
 #include "Program.hh"
@@ -92,7 +92,7 @@ int Program::emitLLVM( void ) const
     castel::toolchain::Source source = this->makeSource( mOptionBag.inputFile( ) );
     llvm::Module * module = evaluator.compile( source );
 
-    llvm::PassManager passManager;
+    llvm::legacy::PassManager passManager;
     passManager.add( llvm::createPrintModulePass( llvm::outs( ) ) );
     passManager.run( * module );
 
